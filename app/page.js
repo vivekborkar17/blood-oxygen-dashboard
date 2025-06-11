@@ -22,9 +22,8 @@ export default function Home() {
       .from('readings')
       .select('spo2, heart_rate')
       .order('inserted_at', { ascending: false })
-      .limit(1)
-      .single();
-    if (!error && data) setLatest(data);
+      .limit(1);
+    if (!error && data && data.length > 0) setLatest(data[0]);
   };
 
   // Trend chart (last 24 SPO2 readings)
@@ -34,8 +33,10 @@ export default function Home() {
       .select('spo2')
       .order('inserted_at', { ascending: false })
       .limit(24);
-    if (!error && data) {
+    if (!error && data && data.length > 0) {
       setTrendData(data.map((d) => d.spo2).reverse());
+    } else {
+      setTrendData([]);
     }
   };
 
@@ -46,8 +47,10 @@ export default function Home() {
       .select('heart_rate')
       .order('inserted_at', { ascending: false })
       .limit(10);
-    if (!error && data) {
+    if (!error && data && data.length > 0) {
       setHeartHistory(data.map((d) => d.heart_rate).reverse());
+    } else {
+      setHeartHistory([]);
     }
   };
 
@@ -58,7 +61,8 @@ export default function Home() {
       .select('*')
       .order('inserted_at', { ascending: false })
       .limit(5);
-    if (!error && data) setHistoryData(data);
+    if (!error && data && data.length > 0) setHistoryData(data);
+    else setHistoryData([]);
   };
 
   // Weekly stats from view
@@ -66,10 +70,16 @@ export default function Home() {
     const { data, error } = await supabase
       .from('weekly_spo2_stats')
       .select('*');
-    if (!error && data) setWeeklyStats(data);
+    if (!error && data && data.length > 0) setWeeklyStats(data);
+    else setWeeklyStats([]);
   };
 
   useEffect(() => {
+    fetchLatest();
+    fetchTrend();
+    fetchHeartHistory();
+    fetchHistoryTable();
+    fetchWeeklyStats();
     const interval = setInterval(() => {
       fetchLatest();
       fetchTrend();
