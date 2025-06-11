@@ -13,17 +13,29 @@ import {
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Filler, Legend);
 
-export default function TrendChart({ dataPoints }) {
+export default function TrendChart({ data = [] }) {
+  // Generate time labels for the last 24 hours
+  const generateTimeLabels = () => {
+    const labels = [];
+    const now = new Date();
+    for (let i = 23; i >= 0; i--) {
+      const time = new Date(now.getTime() - i * 3600000); // subtract hours in milliseconds
+      labels.push(time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
+    }
+    return labels;
+  };
+
   const chartData = {
-    labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
+    labels: generateTimeLabels(),
     datasets: [
       {
         label: 'SPO2 Level',
-        data: dataPoints,
-        fill: true,
-        backgroundColor: 'rgba(67, 97, 238, 0.1)',
+        data: data,
         borderColor: '#4361ee',
+        backgroundColor: 'rgba(67, 97, 238, 0.1)',
+        borderWidth: 2,
         tension: 0.4,
+        fill: true,
       },
     ],
   };
@@ -35,11 +47,34 @@ export default function TrendChart({ dataPoints }) {
       y: {
         min: 80,
         max: 100,
-        ticks: { stepSize: 5 },
+        ticks: {
+          stepSize: 5,
+        },
+        title: {
+          display: true,
+          text: 'SPO2 (%)',
+        },
+      },
+      x: {
+        ticks: {
+          maxRotation: 45,
+          minRotation: 45,
+        },
+        title: {
+          display: true,
+          text: 'Time',
+        },
       },
     },
     plugins: {
-      legend: { display: false },
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => `SPO2: ${context.parsed.y}%`,
+        },
+      },
     },
   };
 

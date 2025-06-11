@@ -1,8 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* This file should be deleted or renamed (e.g., globals-unused.css) before deploying to Vercel. */
 
 @import "tailwindcss";
 
 :root {
+  --primary: #4361ee;
+  --secondary: #3f37c9;
+  --accent: #4895ef;
+  --danger: #f72585;
+  --success: #4cc9f0;
+  --light: #f8f9fa;
+  --dark: #212529;
+  --gray: #6c757d;
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -21,8 +33,99 @@
   }
 }
 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #f5f7fa;
+  color: var(--dark);
+}
+
+.card {
+  @apply bg-white rounded-lg shadow-md p-6 transition-all duration-300;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  @apply flex justify-between items-center mb-4;
+}
+
+.card-title {
+  @apply text-lg font-semibold text-gray-800;
+}
+
+.card-icon {
+  @apply w-10 h-10 rounded-lg flex items-center justify-center text-white;
+}
+
+.card-icon.primary {
+  @apply bg-blue-600;
+}
+
+.card-icon.danger {
+  @apply bg-red-500;
+}
+
+.card-icon.success {
+  @apply bg-cyan-400;
+}
+
+.spo2-value {
+  @apply text-5xl font-bold text-center my-5 relative;
+}
+
+.normal {
+  @apply text-cyan-400;
+}
+
+.warning {
+  @apply text-yellow-500;
+}
+
+.critical {
+  @apply text-red-500;
+}
+
+.stats-grid {
+  @apply grid grid-cols-2 gap-4;
+}
+
+.stat-item {
+  @apply flex flex-col;
+}
+
+.stat-label {
+  @apply text-sm text-gray-500 mb-1;
+}
+
+.stat-value {
+  @apply text-xl font-semibold;
+}
+
+.chart-container {
+  @apply h-64 relative;
+}
+
+.status-badge {
+  @apply px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.badge-normal {
+  @apply bg-cyan-50 text-cyan-400;
+}
+
+.badge-warning {
+  @apply bg-yellow-50 text-yellow-500;
+}
+
+.badge-critical {
+  @apply bg-red-50 text-red-500;
 }
