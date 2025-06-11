@@ -1,5 +1,7 @@
+'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import Image from "next/image";
 
 import TrendChart from '@/components/TrendChart';
 import HeartRateChart from '@/components/HeartRateChart';
