@@ -21,86 +21,90 @@
 
 @layer components {
   .card {
-    @apply bg-white rounded-lg shadow-md p-4 sm:p-6 transition duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1 w-full;
+    @apply bg-white rounded-2xl shadow-lg hover:shadow-xl p-6 transition-all duration-300 ease-in-out border border-gray-100 backdrop-blur-sm;
+  }
+
+  .card:hover {
+    @apply -translate-y-1 shadow-2xl;
   }
 
   .card-header {
-    @apply flex justify-between items-center mb-3 sm:mb-4;
+    @apply flex justify-between items-center mb-4;
   }
 
   .card-title {
-    @apply text-base sm:text-lg font-semibold text-gray-800;
+    @apply text-lg font-bold text-gray-800;
   }
 
   .card-icon {
-    @apply w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-white;
+    @apply w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg;
   }
 
   .card-icon.primary {
-    @apply bg-blue-600;
+    @apply bg-gradient-to-r from-blue-500 to-blue-600;
   }
 
   .card-icon.danger {
-    @apply bg-red-500;
+    @apply bg-gradient-to-r from-red-500 to-pink-500;
   }
 
   .card-icon.success {
-    @apply bg-cyan-400;
+    @apply bg-gradient-to-r from-cyan-400 to-teal-500;
   }
 
   .spo2-value {
-    @apply text-4xl sm:text-5xl font-bold text-center my-3 sm:my-5 relative;
+    @apply text-5xl font-bold text-center my-6 relative drop-shadow-lg;
   }
 
   .spo2-value.normal {
-    @apply text-cyan-400;
+    @apply text-transparent bg-gradient-to-r from-cyan-400 to-teal-500 bg-clip-text;
   }
 
   .spo2-value.warning {
-    @apply text-yellow-500;
+    @apply text-transparent bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text;
   }
 
   .spo2-value.critical {
-    @apply text-red-500;
+    @apply text-transparent bg-gradient-to-r from-red-500 to-pink-600 bg-clip-text;
   }
 
   .spo2-status {
-    @apply text-center text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base;
+    @apply text-center text-gray-600 mb-4 text-base font-medium;
   }
 
   .stats-grid {
-    @apply grid grid-cols-2 gap-3 sm:gap-4;
+    @apply grid grid-cols-2 gap-4;
   }
 
   .stat-item {
-    @apply flex flex-col;
+    @apply flex flex-col bg-gray-50 rounded-xl p-3 border border-gray-100;
   }
 
   .stat-label {
-    @apply text-xs sm:text-sm text-gray-500;
+    @apply text-sm text-gray-500 font-medium mb-1;
   }
 
   .stat-value {
-    @apply text-lg sm:text-xl font-semibold;
+    @apply text-xl font-bold text-gray-800;
   }
 
   .chart-container {
-    @apply h-[250px] sm:h-[300px] md:h-[350px] relative mt-2 sm:mt-4;
+    @apply h-[280px] relative mt-4 bg-gray-50 rounded-xl p-4 border border-gray-100;
   }
 
   .status-badge {
-    @apply px-2 py-1 rounded-full text-xs font-medium;
+    @apply px-3 py-1 rounded-full text-xs font-semibold shadow-sm;
   }
 
   .status-badge.normal {
-    @apply bg-cyan-50 text-cyan-400;
+    @apply bg-gradient-to-r from-cyan-50 to-teal-50 text-cyan-600 border border-cyan-200;
   }
 
   .status-badge.warning {
-    @apply bg-yellow-50 text-yellow-500;
+    @apply bg-gradient-to-r from-yellow-50 to-orange-50 text-orange-600 border border-orange-200;
   }
 
   .status-badge.critical {
-    @apply bg-red-50 text-red-500;
+    @apply bg-gradient-to-r from-red-50 to-pink-50 text-red-600 border border-red-200;
   }
 }

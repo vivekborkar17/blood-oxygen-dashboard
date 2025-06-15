@@ -54,32 +54,36 @@ export default function Home() {
 
   // Fetch trend data (last 24 hours)
   const fetchTrend = async () => {
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const now = new Date();
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    
+    console.log('Fetching data from:', twentyFourHoursAgo.toISOString(), 'to now');
+    
     const { data, error } = await supabase
       .from('readings')
       .select('spo2, inserted_at')
-      .gte('inserted_at', twentyFourHoursAgo)
+      .gte('inserted_at', twentyFourHoursAgo.toISOString())
       .order('inserted_at', { ascending: true });
-    
-    if (!error && data) {
-      // Group data by hour and calculate average
-      const hourlyData = {};
-      data.forEach(reading => {
-        const hour = new Date(reading.inserted_at).getHours();
-        if (!hourlyData[hour]) {
-          hourlyData[hour] = { sum: 0, count: 0 };
-        }
-        hourlyData[hour].sum += reading.spo2;
-        hourlyData[hour].count += 1;
-      });
-
-      // Create array of 24 values with averages
-      const trend = Array(24).fill(null);
-      Object.entries(hourlyData).forEach(([hour, stats]) => {
-        trend[hour] = Math.round(stats.sum / stats.count);
-      });
       
-      setTrendData(trend);
+    if (!error && data) {
+      console.log(`Found ${data.length} readings in last 24 hours:`, data);
+      
+      // If we have data, use all readings with timestamps
+      if (data.length > 0) {
+        // Use all readings as data points with their actual times
+        const trendWithTimes = data.map(reading => ({
+          x: reading.inserted_at, // Keep as string for easier handling
+          y: reading.spo2,
+          time: new Date(reading.inserted_at).toLocaleTimeString()
+        }));
+        setTrendData(trendWithTimes);
+      } else {
+        console.log('No data found in last 24 hours');
+        setTrendData([]);
+      }
+    } else {
+      console.error('Error fetching trend data:', error);
+      setTrendData([]);
     }
   };
 
@@ -200,21 +204,34 @@ export default function Home() {
   };
 
   return (
-    <div className="container mx-auto px-4 sm:px-5 py-6 sm:py-8">
-      <header className="flex flex-col sm:flex-row justify-between items-center mb-8 sm:mb-12 pb-4 sm:pb-6 border-b border-gray-200">
-        <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-0">
-          <FontAwesomeIcon icon={faHeartbeat} className="text-2xl sm:text-3xl text-red-500" />
-          <h1 className="text-2xl sm:text-3xl font-bold text-blue-600">Blood Oxygen Monitoring</h1>
-        </div>
-        <div className="flex items-center gap-4 sm:gap-6">
-          <span className="text-base sm:text-lg text-gray-700">Dr. Sanmesh Joshi</span>
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-base sm:text-lg">
-            SJ
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <header className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-100">
+          <div className="flex flex-col sm:flex-row justify-between items-center">
+            <div className="flex items-center gap-4 mb-4 sm:mb-0">
+              <div className="bg-gradient-to-r from-red-500 to-pink-500 p-3 rounded-xl shadow-lg">
+                <FontAwesomeIcon icon={faHeartbeat} className="text-2xl text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                  Blood Oxygen Monitor
+                </h1>
+                <p className="text-gray-500 text-sm">Real-time patient monitoring system</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-lg font-semibold text-gray-800">Dr. Sanmesh Joshi</p>
+                <p className="text-sm text-gray-500">Medical Specialist</p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                SJ
+              </div>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-6 sm:mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* Current SPO2 Level */}
         <div className="card">
           <div className="card-header">
@@ -224,31 +241,31 @@ export default function Home() {
             </div>
           </div>
           <div className={`spo2-value ${latest.spo2 >= 95 ? 'normal' : latest.spo2 >= 90 ? 'warning' : 'critical'}`}>
-            {latest.spo2}
+            {latest.spo2}<span className="text-2xl ml-1">%</span>
           </div>
           <div className="spo2-status">
-            {latest.spo2 >= 95 ? 'Normal Oxygen Level' : 
-             latest.spo2 >= 90 ? 'Low Oxygen Level - Monitor Patient' : 
-             'Critical Oxygen Level - Immediate Attention Required'}
+            {latest.spo2 >= 95 ? '✅ Normal Oxygen Level' : 
+             latest.spo2 >= 90 ? '⚠️ Low Oxygen - Monitor Patient' : 
+             '🚨 Critical Level - Immediate Attention'}
           </div>
           <div className="stats-grid">
             <div className="stat-item">
               <span className="stat-label">Oxygenated Blood</span>
-              <span className="stat-value">{latest.spo2}%</span>
+              <span className="stat-value text-green-600">{latest.spo2}%</span>
             </div>
             <div className="stat-item">
               <span className="stat-label">Deoxygenated Blood</span>
-              <span className="stat-value">{100 - latest.spo2}%</span>
+              <span className="stat-value text-red-500">{100 - latest.spo2}%</span>
             </div>
           </div>
         </div>
 
         {/* SPO2 Trend */}
-        <div className="card md:col-span-2">
+        <div className="card lg:col-span-2">
           <div className="card-header">
-            <h2 className="card-title">SPO2 Trend (Last 24 Hours)</h2>
+            <h2 className="card-title">SPO2 Real-Time Trend</h2>
             <div className="card-icon success">
-              <FontAwesomeIcon icon={faChartLine} className="text-lg sm:text-xl" />
+              <FontAwesomeIcon icon={faChartLine} className="text-xl" />
             </div>
           </div>
           <div className="chart-container">
@@ -259,14 +276,18 @@ export default function Home() {
         {/* Heart Rate */}
         <div className="card">
           <div className="card-header">
-            <h2 className="card-title">Heart Rate</h2>
+            <h2 className="card-title">Heart Rate Monitor</h2>
             <div className="card-icon danger">
-              <FontAwesomeIcon icon={faHeartbeat} className="text-lg sm:text-xl" />
+              <FontAwesomeIcon icon={faHeartbeat} className="text-xl" />
             </div>
           </div>
-          <div className="mb-4 text-center">
-            <div className="text-4xl font-bold text-red-500">{latest.heart_rate}</div>
-            <div className="text-sm text-gray-600 mt-1">BPM</div>
+          <div className="text-center mb-4">
+            <div className="text-5xl font-bold text-transparent bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text mb-2">
+              {latest.heart_rate}
+            </div>
+            <div className="text-sm text-gray-500 font-medium bg-gray-50 rounded-lg px-3 py-1 inline-block">
+              Beats Per Minute
+            </div>
           </div>
           <div className="chart-container">
             <HeartRateChart data={heartRateData} currentRate={latest.heart_rate} />
@@ -274,11 +295,11 @@ export default function Home() {
         </div>
 
         {/* Weekly Stats */}
-        <div className="card md:col-span-2">
+        <div className="card lg:col-span-2">
           <div className="card-header">
-            <h2 className="card-title">Weekly Statistics</h2>
+            <h2 className="card-title">Weekly Health Analytics</h2>
             <div className="card-icon success">
-              <FontAwesomeIcon icon={faChartPie} className="text-lg sm:text-xl" />
+              <FontAwesomeIcon icon={faChartPie} className="text-xl" />
             </div>
           </div>
           <div className="chart-container">
@@ -287,11 +308,11 @@ export default function Home() {
         </div>
 
         {/* History Table */}
-        <div className="card overflow-hidden">
+        <div className="card">
           <div className="card-header">
-            <h2 className="card-title">Recent History</h2>
+            <h2 className="card-title">Recent Activity</h2>
             <div className="card-icon primary">
-              <FontAwesomeIcon icon={faHistory} className="text-lg sm:text-xl" />
+              <FontAwesomeIcon icon={faHistory} className="text-xl" />
             </div>
           </div>
           <div className="overflow-x-auto">
@@ -300,17 +321,17 @@ export default function Home() {
         </div>
 
         {/* Blood Composition */}
-        <div className="card md:col-span-2">
+        <div className="card lg:col-span-2">
           <div className="card-header">
-            <h2 className="card-title">Blood Composition</h2>
+            <h2 className="card-title">Blood Oxygen Analysis</h2>
             <div className="card-icon danger">
-              <FontAwesomeIcon icon={faTint} className="text-lg sm:text-xl" />
+              <FontAwesomeIcon icon={faTint} className="text-xl" />
             </div>
           </div>
           <div className="chart-container">
             <BloodComposition spo2={latest.spo2} />
           </div>
-        </div>
+        </div>        </div>
       </div>
     </div>
   );
