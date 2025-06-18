@@ -16,15 +16,28 @@ export default function Home() {
   const [heartRateData, setHeartRateData] = useState([]);
   const [historyData, setHistoryData] = useState([]);
   const [weeklyStats, setWeeklyStats] = useState([]);
+  const [isSimulating, setIsSimulating] = useState(true);
+  const [intervalId, setIntervalId] = useState(null);
 
   useEffect(() => {
     // Initial fetch
     fetchAllData();
 
     // Set up automatic simulation and data refresh every second
-    const interval = setInterval(() => {
-      simulateReading().then(() => fetchAllData());
-    }, 1000);
+    if (isSimulating) {
+      const interval = setInterval(() => {
+        simulateReading().then(() => fetchAllData());
+      }, 1000);
+      setIntervalId(interval);
+      
+      // Cleanup interval when component unmounts or simulation stops
+      return () => {
+        clearInterval(interval);
+      };
+    } else if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+    }
 
     // Set up real-time subscription as backup
     const subscription = supabase
@@ -35,12 +48,14 @@ export default function Home() {
       })
       .subscribe();
 
-    // Cleanup interval and subscription
+    // Cleanup subscription
     return () => {
-      clearInterval(interval);
       subscription.unsubscribe();
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
     };
-  }, []);
+  }, [isSimulating]);
 
   // Fetch latest SPO2 and HR
   const fetchLatest = async () => {
@@ -203,6 +218,16 @@ export default function Home() {
     }
   };
 
+  // Toggle simulation
+  const toggleSimulation = () => {
+    setIsSimulating(!isSimulating);
+  };
+
+  // Manual data refresh
+  const refreshData = async () => {
+    await fetchAllData();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
       <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
@@ -220,6 +245,31 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center gap-4">
+              {/* Simulation Controls */}
+              <div className="flex items-center gap-3 mr-6">
+                <button
+                  onClick={toggleSimulation}
+                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 shadow-md ${
+                    isSimulating
+                      ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600'
+                      : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600'
+                  }`}
+                >
+                  {isSimulating ? '⏸️ Stop Simulation' : '▶️ Start Simulation'}
+                </button>
+                <button
+                  onClick={refreshData}
+                  className="px-3 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg font-semibold text-sm hover:from-blue-600 hover:to-cyan-600 transition-all duration-200 shadow-md"
+                >
+                  🔄 Refresh
+                </button>
+                <div className="flex items-center gap-2">
+                  <div className={`w-3 h-3 rounded-full ${isSimulating ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+                  <span className="text-xs text-gray-500">
+                    {isSimulating ? 'Live' : 'Paused'}
+                  </span>
+                </div>
+              </div>
               <div className="text-right">
                 <p className="text-lg font-semibold text-gray-800">Dr. Sanmesh Joshi</p>
                 <p className="text-sm text-gray-500">Medical Specialist</p>
